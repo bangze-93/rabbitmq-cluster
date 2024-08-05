@@ -1,0 +1,87 @@
+---
+- block:
+
+  - name: Update /etc/hosts file
+    ansible.builtin.template:
+      src: etc-hosts.j2
+      dest: /etc/hosts
+      mode: 0644
+      backup: true
+
+  - name: Create required directory for RabbitMQ
+    ansible.builtin.file:
+      path: "{{ rabbitmq_vol_dir }}/data"
+      state: directory
+      mode: 0755
+
+  - name: Configure RabbitMQ compose file
+    ansible.builtin.template:
+      src: rabbitmq-compose.yaml.j2
+      dest: "{{ rabbitmq_vol_dir }}/rabbitmq.yaml"
+      mode: 0644
+
+  when: inventory_hostname in groups['rabbitmq']
+
+- name: Create RabbitMQ container on RabbitMQ01
+  community.docker.docker_compose_v2:
+    project_src: "{{ rabbitmq_vol_dir }}"
+    files: rabbitmq.yaml
+    project_name: rabbitmq
+    state: present
+  when: inventory_hostname == 'rabbitmq01'
+
+- name: Sleep for 2 minutes to prepare RabbitMQ01
+  ansible.builtin.pause:
+    minutes: 2
+
+- name: Get .erlang.cookie from RabbitMQ01
+  ansible.builtin.fetch:
+    src: "{{ rabbitmq_vol_dir }}/data/.erlang.cookie"
+    dest: "{{ playbook_dir }}/files/"
+    flat: true
+  when: inventory_hostname == 'rabbitmq01'
+
+- block:
+
+    - name: Copy .erlang.cookie to RabbitMQ02 and RabbitMQ03
+      ansible.builtin.copy:
+        src: .erlang.cookie
+        dest: "{{ rabbitmq_vol_dir }}/data/"
+        owner: systemd-network 
+        group: systemd-journal
+        mode: 0400
+
+    - name: Create RabbitMQ container on RabbitMQ02 and RabbitMQ03
+      community.docker.docker_compose_v2:
+        project_src: "{{ rabbitmq_vol_dir }}"
+        files: rabbitmq.yaml
+        project_name: rabbitmq
+        state: present
+  
+    - name: Join cluster for RabbitMQ02 and RabbitMQ03
+      community.docker.docker_container_exec:
+        container: rabbitmq
+        command: "{{ item }}"
+      loop:
+        - rabbitmqctl stop_app
+        - rabbitmqctl reset
+        - rabbitmqctl join_cluster rabbit@{{ hostvars['rabbitmq01']['ansible_hostname'] }}
+        - rabbitmqctl start_app
+  
+  throttle: 1
+  when: inventory_hostname in groups['rabbitmq'] and inventory_hostname != 'rabbitmq01'
+
+- block:
+
+    - name: Check status cluster
+      community.docker.docker_container_exec:
+        container: rabbitmq
+        command: rabbitmqctl cluster_status
+      register: cluster_status
+
+    - ansible.builtin.debug:
+        var: cluster_status.stdout
+  
+  throttle: 1
+  when: inventory_hostname == 'rabbitmq01'
+...

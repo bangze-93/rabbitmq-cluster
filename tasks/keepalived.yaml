@@ -1,0 +1,53 @@
+---
+- block: 
+
+    - name: Install Keepalived
+      ansible.builtin.apt:
+        state: present
+        update_cache: true
+        pkg:
+          - keepalived
+          - net-tools
+
+    - name: Enable IP forwarding
+      ansible.builtin.copy:
+        src: keepalived.conf
+        dest: /etc/sysctl.d/keepalived.conf
+        mode: 0644
+      register: sysctl
+
+    - name: Reload sysctl
+      ansible.builtin.command: 
+        cmd: sysctl --system
+      when: sysctl.changed
+
+  when: inventory_hostname in groups['keepalived']
+
+- name: Create keepalived.conf for Master
+  ansible.builtin.template:
+    src: keepalived-master-config.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    mode: 0644
+    backup: true
+  register: keepalived_master
+  when: inventory_hostname == 'master'
+
+- name: Create keepalived.conf for Slave
+  ansible.builtin.template:
+    src: keepalived-slave-config.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    mode: 0644
+    backup: true
+  register: keepalived_slave
+  when: inventory_hostname == 'slave'
+
+- name: Restart Keepalived
+  ansible.builtin.service:
+    name: keepalived
+    state: restarted
+    enabled: true
+  throttle: 1
+  when: keepalived_master.changed or keepalived_slave.changed and inventory_hostname in groups['keepalived']
+
+
+...

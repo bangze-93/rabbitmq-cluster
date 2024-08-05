@@ -1,0 +1,13 @@
+[keepalived]
+master ansible_host=192.168.90.41
+slave  ansible_host=192.168.90.42
+
+[rabbitmq]
+rabbitmq01 ansible_host=192.168.90.43
+rabbitmq02 ansible_host=192.168.90.44
+rabbitmq03 ansible_host=192.168.90.45
+
+[all:vars]
+ansible_user=user
+ansible_ssh_pass=P4s5word
+ansible_become_password=P4s5word

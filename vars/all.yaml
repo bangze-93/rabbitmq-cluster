@@ -1,0 +1,14 @@
+---
+rabbitmq_version: 3.13.0-management-alpine
+rabbitmq_user: admin
+rabbitmq_pass: MF85CtQvXDIP24Yh
+rabbitmq_vol_dir: /opt/rabbitmq
+
+haproxy_version: 2.8
+haproxy_user: admin
+haproxy_pass: EQEN5rj42pIW8TfQ
+haproxy_rabbitmq_amqp_listen_port: 5672
+haproxy_rabbitmq_mgmt_listen_port: 8080
+
+keepalived_vip: 192.168.90.40
+...

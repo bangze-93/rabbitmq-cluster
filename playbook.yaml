@@ -1,0 +1,31 @@
+---
+- name: RabbitMQ Cluster on Docker
+  hosts: all
+  become: true
+  become_method: sudo
+  vars_files:
+    - all.yaml 
+  tasks:
+    - name: Update and upgrade apt packages
+      ansible.builtin.apt:
+        upgrade: 'yes'
+        state: present
+        update_cache: true
+        cache_valid_time: 86400
+
+    - name: Install Docker
+      ansible.builtin.import_tasks:
+        file: tasks/docker.yaml
+
+    - name: Install RabbitMQ
+      ansible.builtin.import_tasks:
+        file: tasks/rabbitmq.yaml
+
+    - name: Install Keepalived
+      ansible.builtin.import_tasks:
+        file: tasks/keepalived.yaml
+
+    - name: Install HAProxy
+      ansible.builtin.import_tasks:
+        file: tasks/haproxy.yaml
+...

@@ -1,0 +1,33 @@
+---
+- block:
+    
+    - name: Add HAProxy repository
+      ansible.builtin.apt_repository:
+        repo: "ppa:vbernat/haproxy-{{ haproxy_version }}"
+        filename: haproxy
+        state: present
+
+    - name: Install HAProxy
+      ansible.builtin.apt:
+        state: present
+        name: haproxy
+        update_cache: true
+
+    - name: Configure haproxy.cfg
+      ansible.builtin.template:
+        src: haproxy-config.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        mode: 0644
+        backup: true
+      register: haproxy_cfg
+
+    - name: Restart HAProxy
+      ansible.builtin.service:
+        name: haproxy
+        state: restarted
+        enabled: true
+      throttle: 1
+      when: haproxy_cfg.changed
+
+  when: inventory_hostname in groups['keepalived']
+...
