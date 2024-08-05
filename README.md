@@ -1,6 +1,6 @@
 # Install RabbitMQ Cluster (Docker) using Ansible on Ubuntu 20
 ### Topology
-
+![Screenshot from 2024-08-05 21-38-30](https://github.com/user-attachments/assets/3be31347-582b-4fe0-a6c2-d9921c4b7117)
 ### Adjust with your env
 - #### <i> vars/all.yaml </i>
 ```
@@ -41,6 +41,9 @@ ansible-playbook playbook.yaml
 ```
 ### Access RabbitMQ management dashboard
 http://192.168.90.40:8080/
+![Screenshot from 2024-08-05 21-37-46](https://github.com/user-attachments/assets/f5606d09-c076-41e6-8138-47dfe333699f)
 
 ### Access HAProxy status
 http://192.168.90.40:8000/stats
+![Screenshot from 2024-08-05 21-35-46](https://github.com/user-attachments/assets/c1342daf-627d-410a-9926-6cfb67f7a608)
+
