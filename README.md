@@ -3,7 +3,7 @@ This installation use haproxy + keepalived as proxy, loadbalancer and failover
 ### Topology
 ![Screenshot from 2024-08-05 21-38-30](https://github.com/user-attachments/assets/3be31347-582b-4fe0-a6c2-d9921c4b7117)
 ### Adjust with your env
-- #### <i> vars/all.yaml </i>
+- ##### <i> ``` vars/all.yaml ``` </i>
 ```
 ---
 rabbitmq_version: 3.13.0-management-alpine
@@ -20,7 +20,7 @@ haproxy_rabbitmq_mgmt_listen_port: 8080
 keepalived_vip: 192.168.90.40
 ...
 ```
-- #### <i> inventory/hosts </i>
+- ##### <i> ``` inventory/hosts ``` </i>
 ```
 [keepalived]
 master ansible_host=192.168.90.41
